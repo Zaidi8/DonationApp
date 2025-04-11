@@ -1,39 +1,43 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import '../global.css';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {Provider} from 'react-redux';
+import store from '@/src/Redux/Reducers/Store';
+import {PersistGate} from 'redux-persist/integration/react';
+import {persistor} from '@/src/Redux/Reducers/Store';
+import Home from '@/src/Screens/Home';
+import DonationDetails from '@/src/Screens/DonationDetails';
+import SignIn from '@/src/Screens/SignIn';
+import SignUp from '@/src/Screens/SignUp';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+const Stack = createNativeStackNavigator();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <Stack.Navigator initialRouteName="Login">
+          <Stack.Screen
+            name="Login"
+            component={SignIn}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
+            name="Registration"
+            component={SignUp}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
+            name="Home"
+            component={Home}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
+            name="DonationDetails"
+            component={DonationDetails}
+            options={{headerShown: false}}
+          />
+        </Stack.Navigator>
+      </PersistGate>
+    </Provider>
   );
 }
