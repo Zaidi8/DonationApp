@@ -15,7 +15,8 @@
         "developmentClient": false,
         "distribution": "internal",
         "android": {
-          "buildType": "apk"
+          "buildType": "apk",
+          "workflow": "managed"
         },
         "ios": {
           "simulator": true

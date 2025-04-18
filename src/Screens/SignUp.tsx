@@ -1,5 +1,11 @@
 import React, {useRef, useState} from 'react';
-import {SafeAreaView, View, TextInput, TouchableOpacity} from 'react-native';
+import {
+  SafeAreaView,
+  View,
+  TextInput,
+  ActivityIndicator,
+  Text,
+} from 'react-native';
 import Header from '../components/Header';
 import CredInput from '../components/Input/CredInput';
 import Button from '../components/Button';
@@ -17,6 +23,9 @@ const SignUp: React.FC = () => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   return (
@@ -74,10 +83,50 @@ const SignUp: React.FC = () => {
           />
         </View>
         <View style={{marginBottom: verticalScale(10)}}>
-          <Button
-            title="Register"
-            onPress={async () => await createUser(fullName, email, password)}
-          />
+          {errorMessage !== '' && (
+            <Text
+              style={{
+                color: 'red',
+                marginBottom: verticalScale(12),
+                textAlign: 'center',
+                fontSize: scaleFontSize(14),
+              }}>
+              {errorMessage}
+            </Text>
+          )}
+
+          {loading ? (
+            <ActivityIndicator size="small" color="#000" />
+          ) : (
+            <Button
+              title="Register"
+              onPress={async () => {
+                setErrorMessage('');
+                setLoading(true);
+                try {
+                  await createUser(fullName, email, password);
+                  navigation.goBack();
+                } catch (err: any) {
+                  let message = err.message;
+
+                  // Optional: custom friendly messages
+                  if (err.code === 'auth/email-already-in-use') {
+                    message = 'This email is already in use.';
+                  } else if (err.code === 'auth/invalid-email') {
+                    message = 'Please enter a valid email.';
+                  } else if (err.code === 'auth/weak-password') {
+                    message = 'Password should be at least 6 characters.';
+                  } else if (err.code === 'auth/netword-request-failed') {
+                    message = 'Network reuest failed please try again.';
+                  }
+
+                  setErrorMessage(message);
+                } finally {
+                  setLoading(false);
+                }
+              }}
+            />
+          )}
         </View>
       </View>
     </SafeAreaView>

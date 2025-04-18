@@ -21,6 +21,7 @@ import usePagination from '@/hooks/Pagination';
 import {updateSelectedDonationId} from '../Redux/Reducers/Donations';
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {authentication} from '@/firebaseConfig';
 import {RootStackParamList} from '../Types/StackNavigation';
 
 const Home: React.FC = () => {
@@ -72,12 +73,28 @@ const Home: React.FC = () => {
     [],
   );
 
+  const [currentUser, setCurrentUser] = useState(
+    () => authentication.currentUser,
+  );
+
+  useEffect(() => {
+    const unsubscribe = authentication.onAuthStateChanged(user => {
+      setCurrentUser(user);
+    });
+
+    return unsubscribe;
+  }, []);
+
   useEffect(() => {
     const items = donations.items.filter(value =>
       value.categoryIds.includes(selectedCategoryId),
     );
     setDonationItems(items);
   }, [categories.selectedCatagoryId]);
+
+  useEffect(() => {
+    console.log('Current user name:', authentication.currentUser?.displayName);
+  }, []);
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -97,7 +114,7 @@ const Home: React.FC = () => {
               flexDirection: 'row',
               justifyContent: 'space-between',
             }}>
-            <Header type={3} title={user.firstName + ' ' + '👋🏻'} />
+            <Header type={3} title={currentUser?.displayName + '👋🏻'} />
             <Image
               source={{uri: user.proileImage}}
               resizeMode="contain"
